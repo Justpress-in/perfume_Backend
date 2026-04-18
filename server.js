@@ -34,14 +34,31 @@ const app = express();
 
 // ── Security & Middleware ─────────────────────────────────────
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
-app.use(cors({
-  origin: [
-    process.env.FRONTEND_URL || 'http://localhost:5173',
-    'http://localhost:3000', // Admin panel
-    'http://localhost:5173',
-  ],
+// Parse CORS_ORIGINS env (comma-separated) as an allow-list; if unset, reflect
+// the request origin so the deployed admin panel and storefront work without
+// hard-coding domains here.
+const corsAllowList = (process.env.CORS_ORIGINS || '')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+const corsOptions = {
+  origin(origin, callback) {
+    // allow server-to-server / curl (no Origin header)
+    if (!origin) return callback(null, true);
+    if (corsAllowList.length === 0) return callback(null, true);
+    if (corsAllowList.includes(origin)) return callback(null, true);
+    return callback(new Error(`Origin ${origin} not allowed by CORS`));
+  },
   credentials: true,
-}));
+  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  exposedHeaders: ['Content-Disposition'],
+  maxAge: 86400,
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
