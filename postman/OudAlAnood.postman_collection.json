@@ -1,0 +1,740 @@
+{
+  "info": {
+    "_postman_id": "oud-alnood-api-2026",
+    "name": "Oud Al-Anood API",
+    "description": "Complete API collection for Oud Al-Anood perfume e-commerce. Covers admin panel APIs and website (customer) APIs.\n\n**Setup:**\n1. Run `npm run seed` to create demo data.\n2. Run the `Admin Login` request — token auto-saves to env.\n3. Run `User Register` or `User Login` — user token auto-saves.\n\n**Environment Variables:**\n- `baseUrl` = http://localhost:5000\n- `adminToken` (auto-set)\n- `userToken` (auto-set)\n- `refreshToken` (auto-set)\n- `productId`, `orderId`, `blogId`, etc. (set manually or via scripts)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5001", "type": "string" },
+    { "key": "adminToken", "value": "", "type": "string" },
+    { "key": "userToken", "value": "", "type": "string" },
+    { "key": "refreshToken", "value": "", "type": "string" },
+    { "key": "userRefreshToken", "value": "", "type": "string" },
+    { "key": "productId", "value": "", "type": "string" },
+    { "key": "orderId", "value": "", "type": "string" },
+    { "key": "blogId", "value": "", "type": "string" },
+    { "key": "storeId", "value": "", "type": "string" },
+    { "key": "testimonialId", "value": "", "type": "string" },
+    { "key": "categoryId", "value": "", "type": "string" },
+    { "key": "offerId", "value": "", "type": "string" },
+    { "key": "bannerId", "value": "", "type": "string" },
+    { "key": "contactId", "value": "", "type": "string" },
+    { "key": "newsletterId", "value": "", "type": "string" },
+    { "key": "wholesaleId", "value": "", "type": "string" },
+    { "key": "couponId", "value": "", "type": "string" },
+    { "key": "reviewId", "value": "", "type": "string" },
+    { "key": "userId", "value": "", "type": "string" },
+    { "key": "adminId", "value": "", "type": "string" },
+    { "key": "addressId", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/health" }
+        }
+      ]
+    },
+    {
+      "name": "Admin Auth",
+      "item": [
+        {
+          "name": "Admin Login",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "const r = pm.response.json();",
+              "if (r.success) {",
+              "  pm.collectionVariables.set('adminToken', r.accessToken);",
+              "  pm.collectionVariables.set('refreshToken', r.refreshToken);",
+              "}"
+            ] }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@oudalnood.com\",\n  \"password\": \"Admin@1234\"\n}" },
+            "url": "{{baseUrl}}/api/auth/login"
+          }
+        },
+        {
+          "name": "Admin Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}" },
+            "url": "{{baseUrl}}/api/auth/refresh"
+          }
+        },
+        {
+          "name": "Admin Me",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/auth/me"
+          }
+        },
+        {
+          "name": "Admin Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/auth/logout"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Management",
+      "item": [
+        {
+          "name": "List Admins",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/admins" }
+        },
+        {
+          "name": "Get Admin",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/admins/{{adminId}}" }
+        },
+        {
+          "name": "Create Admin",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Editor One\",\n  \"email\": \"editor@oudalnood.com\",\n  \"password\": \"Editor@123\",\n  \"role\": \"editor\"\n}" },
+            "url": "{{baseUrl}}/api/admins"
+          }
+        },
+        {
+          "name": "Update Admin",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Editor Updated\",\n  \"role\": \"editor\",\n  \"isActive\": true\n}" },
+            "url": "{{baseUrl}}/api/admins/{{adminId}}"
+          }
+        },
+        {
+          "name": "Reset Admin Password",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"password\": \"NewPass@123\"\n}" },
+            "url": "{{baseUrl}}/api/admins/{{adminId}}/password"
+          }
+        },
+        {
+          "name": "Delete Admin",
+          "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/admins/{{adminId}}" }
+        }
+      ]
+    },
+    {
+      "name": "User Auth (Website)",
+      "item": [
+        {
+          "name": "User Register",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "const r = pm.response.json();",
+              "if (r.success) {",
+              "  pm.collectionVariables.set('userToken', r.accessToken);",
+              "  pm.collectionVariables.set('userRefreshToken', r.refreshToken);",
+              "}"
+            ] }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"New User\",\n  \"email\": \"newuser@example.com\",\n  \"password\": \"Password@123\",\n  \"phone\": \"+60 11-111 1111\",\n  \"language\": \"en\"\n}" },
+            "url": "{{baseUrl}}/api/users/register"
+          }
+        },
+        {
+          "name": "User Login",
+          "event": [{
+            "listen": "test",
+            "script": { "exec": [
+              "const r = pm.response.json();",
+              "if (r.success) {",
+              "  pm.collectionVariables.set('userToken', r.accessToken);",
+              "  pm.collectionVariables.set('userRefreshToken', r.refreshToken);",
+              "}"
+            ] }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"customer@example.com\",\n  \"password\": \"Customer@123\"\n}" },
+            "url": "{{baseUrl}}/api/users/login"
+          }
+        },
+        {
+          "name": "User Refresh",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{userRefreshToken}}\"\n}" },
+            "url": "{{baseUrl}}/api/users/refresh"
+          }
+        },
+        {
+          "name": "User Me",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }], "url": "{{baseUrl}}/api/users/me" }
+        },
+        {
+          "name": "Update My Profile",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Updated Name\",\n  \"phone\": \"+60 11-222 3333\",\n  \"language\": \"ar\"\n}" },
+            "url": "{{baseUrl}}/api/users/me"
+          }
+        },
+        {
+          "name": "Change My Password",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"currentPassword\": \"Customer@123\",\n  \"newPassword\": \"NewPass@123\"\n}" },
+            "url": "{{baseUrl}}/api/users/me/password"
+          }
+        },
+        {
+          "name": "User Logout",
+          "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }], "url": "{{baseUrl}}/api/users/logout" }
+        }
+      ]
+    },
+    {
+      "name": "User Addresses",
+      "item": [
+        {
+          "name": "List Addresses",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }], "url": "{{baseUrl}}/api/users/me/addresses" }
+        },
+        {
+          "name": "Add Address",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"label\": \"Home\",\n  \"fullName\": \"John Doe\",\n  \"phone\": \"+60 11-111 1111\",\n  \"line1\": \"123 Jalan Bukit Bintang\",\n  \"city\": \"Kuala Lumpur\",\n  \"state\": \"WP\",\n  \"postalCode\": \"55100\",\n  \"country\": \"Malaysia\",\n  \"isDefault\": true\n}" },
+            "url": "{{baseUrl}}/api/users/me/addresses"
+          }
+        },
+        {
+          "name": "Update Address",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"line1\": \"456 New Street\"\n}" },
+            "url": "{{baseUrl}}/api/users/me/addresses/{{addressId}}"
+          }
+        },
+        {
+          "name": "Delete Address",
+          "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }], "url": "{{baseUrl}}/api/users/me/addresses/{{addressId}}" }
+        }
+      ]
+    },
+    {
+      "name": "User Wishlist & Orders",
+      "item": [
+        {
+          "name": "Get Wishlist",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }], "url": "{{baseUrl}}/api/users/me/wishlist" }
+        },
+        {
+          "name": "Toggle Wishlist",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"productId\": \"{{productId}}\"\n}" },
+            "url": "{{baseUrl}}/api/users/me/wishlist"
+          }
+        },
+        {
+          "name": "Remove from Wishlist",
+          "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }], "url": "{{baseUrl}}/api/users/me/wishlist/{{productId}}" }
+        },
+        {
+          "name": "My Orders",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }], "url": "{{baseUrl}}/api/users/me/orders" }
+        }
+      ]
+    },
+    {
+      "name": "Users (Admin)",
+      "item": [
+        {
+          "name": "List Users",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": { "raw": "{{baseUrl}}/api/users?page=1&limit=20", "host": ["{{baseUrl}}"], "path": ["api", "users"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }] } }
+        },
+        {
+          "name": "Get User",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/users/{{userId}}" }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"isWholesale\": true,\n  \"isActive\": true\n}" },
+            "url": "{{baseUrl}}/api/users/{{userId}}"
+          }
+        },
+        {
+          "name": "Deactivate User",
+          "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/users/{{userId}}" }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "List Products",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/products?page=1&limit=20", "host": ["{{baseUrl}}"], "path": ["api", "products"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }, { "key": "category", "value": "oud", "disabled": true }, { "key": "search", "value": "oud", "disabled": true }] } }
+        },
+        {
+          "name": "Get Product",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/products/{{productId}}" }
+        },
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": { \"en\": \"New Oud\", \"ar\": \"عود جديد\" },\n  \"price\": 250,\n  \"category\": \"oud\",\n  \"subcategory\": \"oil\",\n  \"description\": { \"en\": \"Test\", \"ar\": \"اختبار\" },\n  \"features\": [\"Aged 10 Years\"],\n  \"stock\": 15,\n  \"isActive\": true\n}" },
+            "url": "{{baseUrl}}/api/products"
+          }
+        },
+        {
+          "name": "Update Product",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"price\": 275,\n  \"stock\": 20\n}" },
+            "url": "{{baseUrl}}/api/products/{{productId}}"
+          }
+        },
+        {
+          "name": "Patch Product",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"isFeatured\": true\n}" },
+            "url": "{{baseUrl}}/api/products/{{productId}}"
+          }
+        },
+        {
+          "name": "Upload Product Image",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "body": { "mode": "formdata", "formdata": [{ "key": "image", "type": "file", "src": "" }] },
+            "url": "{{baseUrl}}/api/products/{{productId}}/image"
+          }
+        },
+        {
+          "name": "Delete Product (soft)",
+          "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/products/{{productId}}" }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Create Order (public)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"customer\": {\n    \"name\": \"Jane Customer\",\n    \"email\": \"jane@example.com\",\n    \"phone\": \"+60 11-111 1111\",\n    \"address\": \"123 Kuala Lumpur\"\n  },\n  \"items\": [\n    { \"productId\": \"{{productId}}\", \"quantity\": 2 }\n  ],\n  \"channel\": \"website\",\n  \"isWholesale\": false,\n  \"notes\": \"Please gift-wrap\"\n}" },
+            "url": "{{baseUrl}}/api/orders"
+          }
+        },
+        {
+          "name": "List Orders",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": { "raw": "{{baseUrl}}/api/orders?page=1&limit=20", "host": ["{{baseUrl}}"], "path": ["api", "orders"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }, { "key": "status", "value": "pending", "disabled": true }] } }
+        },
+        {
+          "name": "Get Order",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/orders/{{orderId}}" }
+        },
+        {
+          "name": "Update Order Status",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"processing\",\n  \"notes\": \"Packed\"\n}" },
+            "url": "{{baseUrl}}/api/orders/{{orderId}}/status"
+          }
+        },
+        {
+          "name": "Export Orders CSV",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/orders/export" }
+        }
+      ]
+    },
+    {
+      "name": "Blog",
+      "item": [
+        {
+          "name": "List Posts",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/blog?page=1&limit=10&published=true", "host": ["{{baseUrl}}"], "path": ["api", "blog"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }, { "key": "published", "value": "true" }] } }
+        },
+        {
+          "name": "Get Post",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/blog/{{blogId}}" }
+        },
+        {
+          "name": "Create Post",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": { \"en\": \"New Post\", \"ar\": \"منشور جديد\" },\n  \"excerpt\": { \"en\": \"Short\", \"ar\": \"قصير\" },\n  \"body\": { \"en\": \"Full body\", \"ar\": \"محتوى\" },\n  \"tags\": [\"oud\", \"tips\"],\n  \"published\": false\n}" },
+            "url": "{{baseUrl}}/api/blog"
+          }
+        },
+        {
+          "name": "Update Post",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": { \"en\": \"Updated\", \"ar\": \"محدّث\" }\n}" },
+            "url": "{{baseUrl}}/api/blog/{{blogId}}"
+          }
+        },
+        {
+          "name": "Toggle Publish",
+          "request": { "method": "PATCH", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/blog/{{blogId}}/publish" }
+        },
+        {
+          "name": "Delete Post",
+          "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/blog/{{blogId}}" }
+        }
+      ]
+    },
+    {
+      "name": "Stores",
+      "item": [
+        { "name": "List Stores", "request": { "method": "GET", "url": "{{baseUrl}}/api/stores" } },
+        { "name": "Get Store", "request": { "method": "GET", "url": "{{baseUrl}}/api/stores/{{storeId}}" } },
+        {
+          "name": "Create Store",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"slug\": \"mid-valley\",\n  \"name\": { \"en\": \"Mid Valley Boutique\", \"ar\": \"بوتيك ميد فالي\" },\n  \"address\": { \"en\": \"Mid Valley, KL\", \"ar\": \"ميد فالي\" },\n  \"phone\": \"+60 3-1111 2222\",\n  \"mapEmbed\": \"\",\n  \"navLink\": \"\",\n  \"isActive\": true\n}" },
+            "url": "{{baseUrl}}/api/stores"
+          }
+        },
+        {
+          "name": "Update Store",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"phone\": \"+60 3-9999 0000\"\n}" },
+            "url": "{{baseUrl}}/api/stores/{{storeId}}"
+          }
+        },
+        { "name": "Delete Store", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/stores/{{storeId}}" } }
+      ]
+    },
+    {
+      "name": "Testimonials",
+      "item": [
+        { "name": "List Testimonials", "request": { "method": "GET", "url": "{{baseUrl}}/api/testimonials" } },
+        { "name": "Get Testimonial", "request": { "method": "GET", "url": "{{baseUrl}}/api/testimonials/{{testimonialId}}" } },
+        {
+          "name": "Create Testimonial",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Happy Customer\",\n  \"text\": { \"en\": \"Amazing\", \"ar\": \"رائع\" },\n  \"rating\": 5,\n  \"isPublished\": true\n}" },
+            "url": "{{baseUrl}}/api/testimonials"
+          }
+        },
+        {
+          "name": "Update Testimonial",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"rating\": 4\n}" },
+            "url": "{{baseUrl}}/api/testimonials/{{testimonialId}}"
+          }
+        },
+        { "name": "Delete Testimonial", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/testimonials/{{testimonialId}}" } }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        { "name": "List Categories", "request": { "method": "GET", "url": "{{baseUrl}}/api/categories" } },
+        { "name": "Get Category", "request": { "method": "GET", "url": "{{baseUrl}}/api/categories/{{categoryId}}" } },
+        {
+          "name": "Create Category",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"slug\": \"gifting\",\n  \"name\": { \"en\": \"Gifting\", \"ar\": \"هدايا\" },\n  \"description\": { \"en\": \"Gift sets\", \"ar\": \"مجموعات هدايا\" }\n}" },
+            "url": "{{baseUrl}}/api/categories"
+          }
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"sortOrder\": 5\n}" },
+            "url": "{{baseUrl}}/api/categories/{{categoryId}}"
+          }
+        },
+        { "name": "Delete Category", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/categories/{{categoryId}}" } }
+      ]
+    },
+    {
+      "name": "Offers",
+      "item": [
+        { "name": "List Offers", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/offers?current=true", "host": ["{{baseUrl}}"], "path": ["api", "offers"], "query": [{ "key": "current", "value": "true" }] } } },
+        { "name": "Get Offer", "request": { "method": "GET", "url": "{{baseUrl}}/api/offers/{{offerId}}" } },
+        {
+          "name": "Create Offer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": { \"en\": \"Summer Sale\", \"ar\": \"تخفيضات الصيف\" },\n  \"discountType\": \"percentage\",\n  \"discountValue\": 20,\n  \"badge\": \"SUMMER\",\n  \"isActive\": true\n}" },
+            "url": "{{baseUrl}}/api/offers"
+          }
+        },
+        {
+          "name": "Update Offer",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"discountValue\": 25\n}" },
+            "url": "{{baseUrl}}/api/offers/{{offerId}}"
+          }
+        },
+        { "name": "Delete Offer", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/offers/{{offerId}}" } }
+      ]
+    },
+    {
+      "name": "Banners / Homepage CMS",
+      "item": [
+        { "name": "List Banners", "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/banners?section=hero", "host": ["{{baseUrl}}"], "path": ["api", "banners"], "query": [{ "key": "section", "value": "hero" }] } } },
+        { "name": "Get Banner", "request": { "method": "GET", "url": "{{baseUrl}}/api/banners/{{bannerId}}" } },
+        {
+          "name": "Create Banner",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"section\": \"hero\",\n  \"title\": { \"en\": \"Title\", \"ar\": \"عنوان\" },\n  \"subtitle\": { \"en\": \"Sub\", \"ar\": \"فرعي\" },\n  \"image\": \"\",\n  \"ctaText\": { \"en\": \"Shop\", \"ar\": \"تسوق\" },\n  \"ctaLink\": \"/shop\",\n  \"isActive\": true\n}" },
+            "url": "{{baseUrl}}/api/banners"
+          }
+        },
+        {
+          "name": "Update Banner",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"isActive\": false\n}" },
+            "url": "{{baseUrl}}/api/banners/{{bannerId}}"
+          }
+        },
+        { "name": "Delete Banner", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/banners/{{bannerId}}" } }
+      ]
+    },
+    {
+      "name": "Contact Messages",
+      "item": [
+        {
+          "name": "Submit Contact Form",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Inquirer\",\n  \"email\": \"inq@example.com\",\n  \"phone\": \"+60 11-000 0000\",\n  \"subject\": \"Question\",\n  \"message\": \"Do you ship to Singapore?\"\n}" },
+            "url": "{{baseUrl}}/api/contact"
+          }
+        },
+        { "name": "List Messages", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/contact" } },
+        { "name": "Get Message", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/contact/{{contactId}}" } },
+        {
+          "name": "Reply / Update Status",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"reply\": \"Yes we ship to Singapore.\",\n  \"status\": \"replied\"\n}" },
+            "url": "{{baseUrl}}/api/contact/{{contactId}}"
+          }
+        },
+        { "name": "Delete Message", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/contact/{{contactId}}" } }
+      ]
+    },
+    {
+      "name": "Newsletter",
+      "item": [
+        {
+          "name": "Subscribe",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"subscriber@example.com\",\n  \"name\": \"Sub\",\n  \"language\": \"en\"\n}" },
+            "url": "{{baseUrl}}/api/newsletter/subscribe"
+          }
+        },
+        {
+          "name": "Unsubscribe",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"subscriber@example.com\"\n}" },
+            "url": "{{baseUrl}}/api/newsletter/unsubscribe"
+          }
+        },
+        { "name": "List Subscribers", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/newsletter" } },
+        { "name": "Export CSV", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/newsletter/export" } },
+        { "name": "Delete Subscriber", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/newsletter/{{newsletterId}}" } }
+      ]
+    },
+    {
+      "name": "Wholesale Inquiries",
+      "item": [
+        {
+          "name": "Submit Inquiry",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"companyName\": \"Scent Co\",\n  \"contactName\": \"Buyer\",\n  \"email\": \"buy@scent.co\",\n  \"phone\": \"+60 12-000 0000\",\n  \"country\": \"Malaysia\",\n  \"businessType\": \"Retailer\",\n  \"volume\": \"100+ bottles/month\",\n  \"message\": \"We want to stock your line.\"\n}" },
+            "url": "{{baseUrl}}/api/wholesale"
+          }
+        },
+        { "name": "List Inquiries", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/wholesale" } },
+        { "name": "Get Inquiry", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/wholesale/{{wholesaleId}}" } },
+        {
+          "name": "Update Inquiry",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"contacted\",\n  \"notes\": \"Called on 2026-04-16\"\n}" },
+            "url": "{{baseUrl}}/api/wholesale/{{wholesaleId}}"
+          }
+        },
+        { "name": "Delete Inquiry", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/wholesale/{{wholesaleId}}" } }
+      ]
+    },
+    {
+      "name": "Coupons",
+      "item": [
+        {
+          "name": "Validate Coupon (public)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"code\": \"WELCOME10\",\n  \"subtotal\": 200\n}" },
+            "url": "{{baseUrl}}/api/coupons/validate"
+          }
+        },
+        { "name": "List Coupons", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/coupons" } },
+        { "name": "Get Coupon", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/coupons/{{couponId}}" } },
+        {
+          "name": "Create Coupon",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"code\": \"SPRING20\",\n  \"discountType\": \"percentage\",\n  \"discountValue\": 20,\n  \"minOrderAmount\": 150,\n  \"usageLimit\": 100,\n  \"isActive\": true\n}" },
+            "url": "{{baseUrl}}/api/coupons"
+          }
+        },
+        {
+          "name": "Update Coupon",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"isActive\": false\n}" },
+            "url": "{{baseUrl}}/api/coupons/{{couponId}}"
+          }
+        },
+        { "name": "Delete Coupon", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/coupons/{{couponId}}" } }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "item": [
+        { "name": "Product Reviews (public)", "request": { "method": "GET", "url": "{{baseUrl}}/api/reviews/product/{{productId}}" } },
+        {
+          "name": "Submit Review",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{userToken}}", "disabled": true }],
+            "body": { "mode": "raw", "raw": "{\n  \"product\": \"{{productId}}\",\n  \"name\": \"Reviewer\",\n  \"email\": \"rev@example.com\",\n  \"rating\": 5,\n  \"title\": \"Amazing\",\n  \"comment\": \"Best oud I've ever tried!\"\n}" },
+            "url": "{{baseUrl}}/api/reviews"
+          }
+        },
+        { "name": "List All (admin)", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": { "raw": "{{baseUrl}}/api/reviews?isApproved=false", "host": ["{{baseUrl}}"], "path": ["api", "reviews"], "query": [{ "key": "isApproved", "value": "false" }] } } },
+        {
+          "name": "Update Review",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"isApproved\": true\n}" },
+            "url": "{{baseUrl}}/api/reviews/{{reviewId}}"
+          }
+        },
+        { "name": "Approve Review", "request": { "method": "PATCH", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/reviews/{{reviewId}}/approve" } },
+        { "name": "Delete Review", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/reviews/{{reviewId}}" } }
+      ]
+    },
+    {
+      "name": "Settings",
+      "item": [
+        { "name": "Get Settings (public)", "request": { "method": "GET", "url": "{{baseUrl}}/api/settings" } },
+        {
+          "name": "Update Settings",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"siteName\": { \"en\": \"Oud Al-Anood\", \"ar\": \"عود العنود\" },\n  \"contactEmail\": \"hello@oudalnood.com\",\n  \"whatsapp\": \"+60123456789\",\n  \"wholesaleDiscountPercent\": 30\n}" },
+            "url": "{{baseUrl}}/api/settings"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "item": [
+        { "name": "Dashboard Summary", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/analytics/summary" } },
+        { "name": "Top Products", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/analytics/products" } },
+        { "name": "Orders Timeline (30d)", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/analytics/orders/timeline" } },
+        { "name": "Channel Breakdown", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }], "url": "{{baseUrl}}/api/analytics/channels" } }
+      ]
+    },
+    {
+      "name": "Uploads",
+      "item": [
+        {
+          "name": "Upload Single Image",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "body": { "mode": "formdata", "formdata": [{ "key": "image", "type": "file", "src": "" }] },
+            "url": "{{baseUrl}}/api/uploads/image"
+          }
+        },
+        {
+          "name": "Upload Multiple Images",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "body": { "mode": "formdata", "formdata": [{ "key": "images", "type": "file", "src": [] }] },
+            "url": "{{baseUrl}}/api/uploads/images"
+          }
+        }
+      ]
+    }
+  ]
+}
