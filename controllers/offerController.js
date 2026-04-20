@@ -26,16 +26,22 @@ const getOne = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+const normalizeBody = (body) => {
+  const b = { ...body };
+  if (b.discountType === 'percent') b.discountType = 'percentage';
+  return b;
+};
+
 const create = async (req, res, next) => {
   try {
-    const o = await Offer.create(req.body);
+    const o = await Offer.create(normalizeBody(req.body));
     res.status(201).json({ success: true, data: o });
   } catch (err) { next(err); }
 };
 
 const update = async (req, res, next) => {
   try {
-    const o = await Offer.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    const o = await Offer.findByIdAndUpdate(req.params.id, normalizeBody(req.body), { new: true, runValidators: true });
     if (!o) return res.status(404).json({ success: false, message: 'Offer not found' });
     res.json({ success: true, data: o });
   } catch (err) { next(err); }
