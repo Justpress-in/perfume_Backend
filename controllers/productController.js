@@ -11,10 +11,19 @@ const getProducts = async (req, res, next) => {
     } = req.query;
 
     const filter = {};
-    if (category) filter.category = category;
-    if (subcategory) filter.subcategory = subcategory;
+    if (category) filter.category = { $regex: category.trim(), $options: 'i' };
+    if (subcategory) filter.subcategory = { $regex: subcategory.trim(), $options: 'i' };
     if (isActive !== undefined) filter.isActive = isActive === 'true';
-    if (search) filter.$text = { $search: search };
+    if (search) {
+      const re = { $regex: search.trim(), $options: 'i' };
+      filter.$or = [
+        { 'name.en': re },
+        { 'name.ar': re },
+        { 'description.en': re },
+        { 'description.ar': re },
+        { category: re },
+      ];
+    }
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const sortOrder = order === 'asc' ? 1 : -1;

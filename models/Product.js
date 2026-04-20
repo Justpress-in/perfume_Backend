@@ -20,12 +20,14 @@ const productSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ['oud', 'perfumes', 'accessories'],
+    trim: true,
+    lowercase: true,
   },
   subcategory: {
     type: String,
-    enum: ['oil', 'bakhoor', 'chips', 'men', 'women', 'unisex', 'burners', 'bottles', 'gifting'],
-    required: true,
+    trim: true,
+    lowercase: true,
+    default: '',
   },
   image: {
     type: String,
@@ -63,7 +65,6 @@ const productSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
-// Text search index for admin product search
-productSchema.index({ 'name.en': 'text', 'name.ar': 'text' });
+productSchema.index({ category: 1, isActive: 1 });
 
 module.exports = mongoose.model('Product', productSchema);
