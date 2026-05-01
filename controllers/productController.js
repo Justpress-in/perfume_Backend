@@ -21,8 +21,7 @@ const getProducts = async (req, res, next) => {
         { 'name.ar': re },
         { 'description.en': re },
         { 'description.ar': re },
-        { category: re },
-      ];
+       ];
     }
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -87,10 +86,13 @@ const updateProduct = async (req, res, next) => {
   }
 };
 
-// PATCH /api/products/:id — partial update (toggle active, price quick update)
+// PATCH /api/products/:id — partial update
 const patchProduct = async (req, res, next) => {
   try {
-    const allowed = ['isActive', 'isFeatured', 'price', 'stock', 'features', 'purchaseLinks'];
+    const allowed = [
+      'isActive', 'isFeatured', 'price', 'stock', 'features', 'purchaseLinks',
+      'weight', 'dimensions', 'sizeVariants',
+    ];
     const update = {};
     allowed.forEach(k => { if (req.body[k] !== undefined) update[k] = req.body[k]; });
 
@@ -117,7 +119,7 @@ const deleteProduct = async (req, res, next) => {
   }
 };
 
-// POST /api/products/:id/image
+// POST /api/products/:id/image  — upload/replace single primary image
 const uploadImage = async (req, res, next) => {
   try {
     if (!req.file) return res.status(400).json({ success: false, message: 'No image file provided' });
@@ -125,19 +127,86 @@ const uploadImage = async (req, res, next) => {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
 
-    // Remove previous Cloudinary image if tracked
     if (product.imagePublicId) {
       try { await cloudinary.uploader.destroy(product.imagePublicId); } catch (_e) { /* ignore */ }
     }
 
-    product.image = req.file.path;              // Cloudinary secure URL
-    product.imagePublicId = req.file.filename;  // Cloudinary public_id
-    await product.save();
+    product.image = req.file.path;
+    product.imagePublicId = req.file.filename;
 
+    // Keep images array in sync — replace or add first entry
+    if (product.images.length > 0) {
+      product.images[0] = { url: req.file.path, publicId: req.file.filename };
+    } else {
+      product.images.unshift({ url: req.file.path, publicId: req.file.filename });
+    }
+
+    await product.save();
     res.json({ success: true, imageUrl: product.image, data: product });
   } catch (err) {
     next(err);
   }
 };
 
-module.exports = { getProducts, getProduct, createProduct, updateProduct, patchProduct, deleteProduct, uploadImage };
+// POST /api/products/:id/images  — add one or more additional images
+const uploadImages = async (req, res, next) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ success: false, message: 'No image files provided' });
+    }
+
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+
+    const newImages = req.files.map(f => ({ url: f.path, publicId: f.filename }));
+    product.images.push(...newImages);
+
+    // Ensure the primary image field reflects first image
+    if (!product.image && product.images.length > 0) {
+      product.image = product.images[0].url;
+      product.imagePublicId = product.images[0].publicId;
+    }
+
+    await product.save();
+    res.json({ success: true, data: product });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// DELETE /api/products/:id/images/:index — remove an image by its array index
+const deleteImage = async (req, res, next) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+
+    const idx = parseInt(req.params.index);
+    if (isNaN(idx) || idx < 0 || idx >= product.images.length) {
+      return res.status(400).json({ success: false, message: 'Invalid image index' });
+    }
+
+    const [removed] = product.images.splice(idx, 1);
+    if (removed?.publicId) {
+      try { await cloudinary.uploader.destroy(removed.publicId); } catch (_e) { /* ignore */ }
+    }
+
+    // Keep primary image field in sync
+    if (product.images.length > 0) {
+      product.image = product.images[0].url;
+      product.imagePublicId = product.images[0].publicId;
+    } else {
+      product.image = '';
+      product.imagePublicId = '';
+    }
+
+    await product.save();
+    res.json({ success: true, data: product });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = {
+  getProducts, getProduct, createProduct, updateProduct, patchProduct,
+  deleteProduct, uploadImage, uploadImages, deleteImage,
+};
