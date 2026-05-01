@@ -1,10 +1,9 @@
 const mongoose = require('mongoose');
 
 const purchaseLinksSchema = new mongoose.Schema({
-  shopee: { type: String, default: '' },
-  grab:   { type: String, default: '' },
-  lalamove: { type: String, default: '' },
-  jnt:    { type: String, default: '' },
+  shopee:    { type: String, default: '' },
+  lojada:    { type: String, default: '' },
+  tiktok:    { type: String, default: '' },
 }, { _id: false });
 
 const productImageSchema = new mongoose.Schema({
