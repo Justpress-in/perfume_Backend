@@ -201,7 +201,7 @@ const adminListUsers = async (req, res, next) => {
   try {
     const { page = 1, limit = 20, search, isActive } = req.query;
     const filter = {};
-    if (search) filter.$or = [{ name: new RegExp(search, 'i') }, { email: new RegExp(search, 'i') }];
+    if (search) filter.$or = [{ name: new RegExp(search, 'i') }, { email: new RegExp(search, 'i') }, { phone: new RegExp(search, 'i') }];
     if (isActive !== undefined) filter.isActive = isActive === 'true';
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const [users, total] = await Promise.all([
