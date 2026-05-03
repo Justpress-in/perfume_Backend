@@ -1,13 +1,26 @@
 const Category = require('../models/Category');
+const cloudinary = require('../config/cloudinary');
 
 const list = async (req, res, next) => {
   try {
-    const { isActive, parent } = req.query;
+    const { isActive, parent, nested } = req.query;
     const filter = {};
     if (isActive !== undefined) filter.isActive = isActive === 'true';
     if (parent === 'null') filter.parent = null;
     else if (parent) filter.parent = parent;
+
     const data = await Category.find(filter).populate('parent', 'name slug').sort({ sortOrder: 1, 'name.en': 1 });
+
+    // When nested=true, return top-level categories with subcategories embedded
+    if (nested === 'true') {
+      const topLevel = data.filter((c) => !c.parent);
+      const result = topLevel.map((cat) => ({
+        ...cat.toObject(),
+        children: data.filter((c) => c.parent && String(c.parent._id || c.parent) === String(cat._id)),
+      }));
+      return res.json({ success: true, data: result });
+    }
+
     res.json({ success: true, data });
   } catch (err) { next(err); }
 };
@@ -43,4 +56,22 @@ const remove = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { list, getOne, create, update, remove };
+const uploadImage = async (req, res, next) => {
+  try {
+    if (!req.file) return res.status(400).json({ success: false, message: 'No image file provided' });
+    const cat = await Category.findById(req.params.id);
+    if (!cat) return res.status(404).json({ success: false, message: 'Category not found' });
+
+    // Delete old image from Cloudinary if it has a public ID stored
+    if (cat.imagePublicId) {
+      try { await cloudinary.uploader.destroy(cat.imagePublicId); } catch (_) {}
+    }
+
+    cat.image = req.file.path;
+    cat.imagePublicId = req.file.filename;
+    await cat.save();
+    res.json({ success: true, imageUrl: cat.image, data: cat });
+  } catch (err) { next(err); }
+};
+
+module.exports = { list, getOne, create, update, remove, uploadImage };

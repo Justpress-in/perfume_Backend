@@ -6,13 +6,14 @@ const getProducts = async (req, res, next) => {
   try {
     const {
       page = 1, limit = 20,
-      category, subcategory, isActive,
+      category, subcategory, gender, isActive,
       search, sortBy = 'createdAt', order = 'desc',
     } = req.query;
 
     const filter = {};
     if (category) filter.category = { $regex: category.trim(), $options: 'i' };
     if (subcategory) filter.subcategory = { $regex: subcategory.trim(), $options: 'i' };
+    if (gender) filter.gender = { $regex: gender.trim(), $options: 'i' };
     if (isActive !== undefined) filter.isActive = isActive === 'true';
     if (search) {
       const re = { $regex: search.trim(), $options: 'i' };

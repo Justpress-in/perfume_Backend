@@ -45,6 +45,13 @@ const productSchema = new mongoose.Schema({
     lowercase: true,
     default: '',
   },
+  gender: {
+    type: String,
+    enum: ['male', 'female', 'unisex', ''],
+    default: '',
+    lowercase: true,
+    trim: true,
+  },
   // Primary image kept for backwards-compat
   image: {
     type: String,

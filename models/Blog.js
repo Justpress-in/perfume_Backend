@@ -14,6 +14,7 @@ const blogSchema = new mongoose.Schema({
     ar: { type: String, default: '' },
   },
   image: { type: String, default: '' },
+  imagePublicId: { type: String, default: '' },
   tags: [{ type: String, trim: true }],
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' },
   published: { type: Boolean, default: false },

@@ -1,4 +1,5 @@
 const Blog = require('../models/Blog');
+const cloudinary = require('../config/cloudinary');
 
 // GET /api/blog
 const getPosts = async (req, res, next) => {
@@ -82,4 +83,24 @@ const deletePost = async (req, res, next) => {
   }
 };
 
-module.exports = { getPosts, getPost, createPost, updatePost, togglePublish, deletePost };
+// POST /api/blog/:id/image
+const uploadImage = async (req, res, next) => {
+  try {
+    if (!req.file) return res.status(400).json({ success: false, message: 'No image file provided' });
+    const post = await Blog.findById(req.params.id);
+    if (!post) return res.status(404).json({ success: false, message: 'Post not found' });
+
+    if (post.imagePublicId) {
+      try { await cloudinary.uploader.destroy(post.imagePublicId); } catch (_) {}
+    }
+
+    post.image = req.file.path;
+    post.imagePublicId = req.file.filename;
+    await post.save();
+    res.json({ success: true, imageUrl: post.image, data: post });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { getPosts, getPost, createPost, updatePost, uploadImage, togglePublish, deletePost };

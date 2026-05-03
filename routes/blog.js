@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {
-  getPosts, getPost, createPost, updatePost, togglePublish, deletePost,
+  getPosts, getPost, createPost, updatePost, uploadImage, togglePublish, deletePost,
 } = require('../controllers/blogController');
 const { authenticate, authorize } = require('../middleware/auth');
 const upload = require('../middleware/upload');
@@ -13,6 +13,7 @@ router.get('/:id', getPost);
 // Protected
 router.post('/', authenticate, createPost);
 router.put('/:id', authenticate, updatePost);
+router.post('/:id/image', authenticate, upload.single('image'), uploadImage);
 router.patch('/:id/publish', authenticate, togglePublish);
 router.delete('/:id', authenticate, authorize('superadmin'), deletePost);
 
