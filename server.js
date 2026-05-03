@@ -30,6 +30,7 @@ const reviewRoutes       = require('./routes/reviews');
 const settingsRoutes     = require('./routes/settings');
 const uploadRoutes       = require('./routes/uploads');
 const orderStatusRoutes  = require('./routes/orderStatuses');
+const aboutRoutes        = require('./routes/about');
 
 const app = express();
 
@@ -106,6 +107,7 @@ app.use('/api/reviews',      reviewRoutes);
 app.use('/api/settings',      settingsRoutes);
 app.use('/api/uploads',       uploadRoutes);
 app.use('/api/order-statuses', orderStatusRoutes);
+app.use('/api/about',          aboutRoutes);
 
 // ── Health Check ──────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {
