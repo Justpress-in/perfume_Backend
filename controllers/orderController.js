@@ -11,6 +11,7 @@ const getOrders = async (req, res, next) => {
       sortBy = 'createdAt', order = 'desc',
     } = req.query;
 
+    const { search } = req.query;
     const filter = {};
     if (status) filter.status = status;
     if (channel) filter.channel = channel;
@@ -18,7 +19,20 @@ const getOrders = async (req, res, next) => {
     if (startDate || endDate) {
       filter.createdAt = {};
       if (startDate) filter.createdAt.$gte = new Date(startDate);
-      if (endDate) filter.createdAt.$lte = new Date(endDate);
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        filter.createdAt.$lte = end;
+      }
+    }
+    if (search) {
+      const re = { $regex: search.trim(), $options: 'i' };
+      filter.$or = [
+        { orderId: re },
+        { 'customer.name': re },
+        { 'customer.email': re },
+        { 'customer.phone': re },
+      ];
     }
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
