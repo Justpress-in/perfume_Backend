@@ -10,6 +10,7 @@ const offerSchema = new mongoose.Schema({
     ar: { type: String, default: '' },
   },
   image: { type: String, default: '' },
+  imagePublicId: { type: String, default: '' },
   discountType: { type: String, enum: ['percentage', 'fixed', 'bogo', 'bundle'], default: 'percentage' },
   discountValue: { type: Number, default: 0 },
   link: { type: String, default: '' },

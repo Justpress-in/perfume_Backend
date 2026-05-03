@@ -1,4 +1,5 @@
 const Offer = require('../models/Offer');
+const cloudinary = require('../config/cloudinary');
 
 const list = async (req, res, next) => {
   try {
@@ -55,4 +56,19 @@ const remove = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { list, getOne, create, update, remove };
+const uploadImage = async (req, res, next) => {
+  try {
+    if (!req.file) return res.status(400).json({ success: false, message: 'No file provided' });
+    const o = await Offer.findById(req.params.id);
+    if (!o) return res.status(404).json({ success: false, message: 'Offer not found' });
+    if (o.imagePublicId) {
+      try { await cloudinary.uploader.destroy(o.imagePublicId); } catch (_) {}
+    }
+    o.image = req.file.path;
+    o.imagePublicId = req.file.filename;
+    await o.save();
+    res.json({ success: true, url: o.image, data: o });
+  } catch (err) { next(err); }
+};
+
+module.exports = { list, getOne, create, update, remove, uploadImage };
