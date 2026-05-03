@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const purchaseLinksSchema = new mongoose.Schema({
   shopee:    { type: String, default: '' },
-  lojada:    { type: String, default: '' },
+  lozada:    { type: String, default: '' },
   tiktok:    { type: String, default: '' },
 }, { _id: false });
 
