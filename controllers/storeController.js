@@ -1,4 +1,5 @@
 const Store = require('../models/Store');
+const cloudinary = require('../config/cloudinary');
 
 const list = async (req, res, next) => {
   try {
@@ -41,4 +42,21 @@ const remove = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { list, getOne, create, update, remove };
+const uploadImage = async (req, res, next) => {
+  try {
+    if (!req.file) return res.status(400).json({ success: false, message: 'No image file provided' });
+    const store = await Store.findById(req.params.id);
+    if (!store) return res.status(404).json({ success: false, message: 'Store not found' });
+
+    if (store.imagePublicId) {
+      try { await cloudinary.uploader.destroy(store.imagePublicId); } catch (_) {}
+    }
+
+    store.image = req.file.path;
+    store.imagePublicId = req.file.filename;
+    await store.save();
+    res.json({ success: true, imageUrl: store.image, data: store });
+  } catch (err) { next(err); }
+};
+
+module.exports = { list, getOne, create, update, uploadImage, remove };

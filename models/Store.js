@@ -18,6 +18,7 @@ const storeSchema = new mongoose.Schema({
   latitude: { type: Number },
   longitude: { type: Number },
   image: { type: String, default: '' },
+  imagePublicId: { type: String, default: '' },
   isActive: { type: Boolean, default: true },
   sortOrder: { type: Number, default: 0 },
 }, { timestamps: true });

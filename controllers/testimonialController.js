@@ -1,4 +1,5 @@
 const Testimonial = require('../models/Testimonial');
+const cloudinary = require('../config/cloudinary');
 
 const list = async (req, res, next) => {
   try {
@@ -41,4 +42,21 @@ const remove = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
-module.exports = { list, getOne, create, update, remove };
+const uploadAvatar = async (req, res, next) => {
+  try {
+    if (!req.file) return res.status(400).json({ success: false, message: 'No image file provided' });
+    const t = await Testimonial.findById(req.params.id);
+    if (!t) return res.status(404).json({ success: false, message: 'Testimonial not found' });
+
+    if (t.avatarPublicId) {
+      try { await cloudinary.uploader.destroy(t.avatarPublicId); } catch (_) {}
+    }
+
+    t.avatar = req.file.path;
+    t.avatarPublicId = req.file.filename;
+    await t.save();
+    res.json({ success: true, avatarUrl: t.avatar, data: t });
+  } catch (err) { next(err); }
+};
+
+module.exports = { list, getOne, create, update, uploadAvatar, remove };
