@@ -23,11 +23,7 @@ const orderSchema = new mongoose.Schema({
     address: { type: String, default: '' },
   },
   items: [orderItemSchema],
-  status: {
-    type: String,
-    enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
-    default: 'pending',
-  },
+  status: { type: String, default: 'pending' },
   channel: {
     type: String,
     enum: ['website', 'shopee', 'grab', 'walk-in', 'wholesale'],

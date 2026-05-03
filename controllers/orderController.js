@@ -1,5 +1,6 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
+const OrderStatus = require('../models/OrderStatus');
 
 // GET /api/orders
 const getOrders = async (req, res, next) => {
@@ -114,9 +115,10 @@ const createOrder = async (req, res, next) => {
 const updateStatus = async (req, res, next) => {
   try {
     const { status, notes } = req.body;
-    const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
-    if (!validStatuses.includes(status)) {
-      return res.status(400).json({ success: false, message: 'Invalid status' });
+    const allStatuses = await OrderStatus.find().select('value');
+    const validValues = allStatuses.map((s) => s.value);
+    if (validValues.length > 0 && !validValues.includes(status)) {
+      return res.status(400).json({ success: false, message: `Invalid status. Valid values: ${validValues.join(', ')}` });
     }
 
     const order = await Order.findOneAndUpdate(
