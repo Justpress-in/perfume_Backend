@@ -70,6 +70,31 @@ const productSchema = new mongoose.Schema({
     en: { type: String, default: '' },
     ar: { type: String, default: '' },
   },
+  descriptionBlocks: {
+    type: [{
+      type: { type: String, enum: ['paragraph', 'bullets', 'featured', 'specs'], required: true },
+      heading: {
+        en: { type: String, default: '' },
+        ar: { type: String, default: '' },
+      },
+      // For paragraph
+      text: {
+        en: { type: String, default: '' },
+        ar: { type: String, default: '' },
+      },
+      // For bullets & featured — array of strings (one entry per language pair)
+      items: [{
+        en: { type: String, default: '' },
+        ar: { type: String, default: '' },
+      }],
+      // For specs — array of label/value rows
+      rows: [{
+        label: { en: { type: String, default: '' }, ar: { type: String, default: '' } },
+        value: { en: { type: String, default: '' }, ar: { type: String, default: '' } },
+      }],
+    }],
+    default: [],
+  },
   features: [{ type: String }],
   purchaseLinks: {
     type: purchaseLinksSchema,
