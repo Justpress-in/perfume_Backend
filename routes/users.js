@@ -8,6 +8,8 @@ const { authenticate: adminAuth, authorize } = require('../middleware/auth');
 router.post('/register', c.register);
 router.post('/login', c.login);
 router.post('/refresh', c.refresh);
+router.post('/forgot-password', c.forgotPassword);
+router.post('/reset-password', c.resetPassword);
 
 // Authenticated user
 router.post('/logout', authenticateUser, c.logout);

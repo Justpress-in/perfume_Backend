@@ -70,6 +70,10 @@ const productSchema = new mongoose.Schema({
     en: { type: String, default: '' },
     ar: { type: String, default: '' },
   },
+  descriptionHtml: {
+    en: { type: String, default: '' },
+    ar: { type: String, default: '' },
+  },
   descriptionBlocks: {
     type: [{
       type: { type: String, enum: ['paragraph', 'bullets', 'featured', 'specs'], required: true },

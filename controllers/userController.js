@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const User = require('../models/User');
 const Order = require('../models/Order');
 
@@ -196,6 +197,72 @@ const myOrders = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+// ── Forgot / Reset password ───────────────────────────────────
+
+// POST /api/users/forgot-password
+const forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ success: false, message: 'Email is required' });
+
+    const user = await User.findOne({ email: email.toLowerCase(), isActive: true });
+    // Always respond success to prevent email enumeration
+    if (!user) {
+      return res.json({ success: true, message: 'If an account with that email exists, a reset link has been sent.' });
+    }
+
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+
+    user.passwordResetToken = hashedToken;
+    user.passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    await user.save();
+
+    // In a production app you'd send this via nodemailer/SendGrid.
+    // For now we return the token in the response so the frontend can use it directly.
+    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${rawToken}&email=${encodeURIComponent(user.email)}`;
+    console.log(`[Password Reset] ${user.email} → ${resetUrl}`);
+
+    res.json({
+      success: true,
+      message: 'If an account with that email exists, a reset link has been sent.',
+      // Only returned in development for testing
+      ...(process.env.NODE_ENV !== 'production' && { resetUrl }),
+    });
+  } catch (err) { next(err); }
+};
+
+// POST /api/users/reset-password
+const resetPassword = async (req, res, next) => {
+  try {
+    const { token, email, newPassword } = req.body;
+    if (!token || !email || !newPassword) {
+      return res.status(400).json({ success: false, message: 'Token, email and new password are required' });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
+    }
+
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+    const user = await User.findOne({
+      email: email.toLowerCase(),
+      isActive: true,
+    }).select('+passwordResetToken +passwordResetExpires');
+
+    if (!user || user.passwordResetToken !== hashedToken || !user.passwordResetExpires || user.passwordResetExpires < new Date()) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired reset token' });
+    }
+
+    user.password = newPassword;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    user.refreshToken = undefined; // Invalidate all existing sessions
+    await user.save();
+
+    res.json({ success: true, message: 'Password reset successful. Please sign in.' });
+  } catch (err) { next(err); }
+};
+
 // ── Admin: list/ban users ─────────────────────────────────────
 const adminListUsers = async (req, res, next) => {
   try {
@@ -241,6 +308,7 @@ const adminDeleteUser = async (req, res, next) => {
 
 module.exports = {
   register, login, refresh, logout, getMe, updateMe, changePassword,
+  forgotPassword, resetPassword,
   listAddresses, addAddress, updateAddress, deleteAddress,
   getWishlist, toggleWishlist, removeWishlist, myOrders,
   adminListUsers, adminGetUser, adminUpdateUser, adminDeleteUser,

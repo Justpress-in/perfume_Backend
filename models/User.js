@@ -25,6 +25,8 @@ const userSchema = new mongoose.Schema({
   language: { type: String, enum: ['en', 'ar'], default: 'en' },
   isWholesale: { type: Boolean, default: false },
   refreshToken: { type: String, select: false },
+  passwordResetToken: { type: String, select: false },
+  passwordResetExpires: { type: Date, select: false },
   isActive: { type: Boolean, default: true },
   lastLogin: Date,
 }, { timestamps: true });
