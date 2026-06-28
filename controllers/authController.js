@@ -101,4 +101,37 @@ const getMe = (req, res) => {
   });
 };
 
-module.exports = { login, refresh, logout, getMe };
+// PUT /api/auth/password — change own password
+const changePassword = async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ success: false, message: 'Current and new password are required' });
+    }
+    if (newPassword.length < 8) {
+      return res.status(400).json({ success: false, message: 'New password must be at least 8 characters' });
+    }
+    if (newPassword === currentPassword) {
+      return res.status(400).json({ success: false, message: 'New password must be different from current password' });
+    }
+
+    const admin = await Admin.findById(req.admin._id).select('+password');
+    if (!admin) {
+      return res.status(404).json({ success: false, message: 'Admin not found' });
+    }
+    if (!(await admin.comparePassword(currentPassword))) {
+      return res.status(401).json({ success: false, message: 'Current password is incorrect' });
+    }
+
+    admin.password = newPassword;
+    // Invalidate existing sessions so the old refresh token can no longer be used
+    admin.refreshToken = null;
+    await admin.save();
+
+    res.json({ success: true, message: 'Password changed successfully' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { login, refresh, logout, getMe, changePassword };
