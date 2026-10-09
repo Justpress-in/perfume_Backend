@@ -31,6 +31,7 @@ const settingsRoutes     = require('./routes/settings');
 const uploadRoutes       = require('./routes/uploads');
 const orderStatusRoutes  = require('./routes/orderStatuses');
 const aboutRoutes        = require('./routes/about');
+const paymentRoutes      = require('./routes/payments');
 
 const app = express();
 
@@ -108,6 +109,7 @@ app.use('/api/settings',      settingsRoutes);
 app.use('/api/uploads',       uploadRoutes);
 app.use('/api/order-statuses', orderStatusRoutes);
 app.use('/api/about',          aboutRoutes);
+app.use('/api/payments',       paymentRoutes);
 
 // ── Health Check ──────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {

@@ -1,6 +1,7 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const OrderStatus = require('../models/OrderStatus');
+const { priceOrder } = require('../services/orderPricing');
 
 // GET /api/orders
 const getOrders = async (req, res, next) => {
@@ -68,40 +69,25 @@ const getOrder = async (req, res, next) => {
   }
 };
 
-// POST /api/orders — called by frontend checkout
+// POST /api/orders — unpaid order (online card payments go through /api/payments/paypal)
 const createOrder = async (req, res, next) => {
   try {
-    const { customer, items, channel, isWholesale, notes } = req.body;
+    const { customer, items, channel, isWholesale, couponCode, notes } = req.body;
+    const priced = await priceOrder({ items, isWholesale: !!isWholesale, couponCode });
 
-    // Build items with product snapshots
-    const orderItems = [];
-    let subtotal = 0;
-    for (const item of items) {
-      const product = await Product.findById(item.productId);
-      if (!product) return res.status(404).json({ success: false, message: `Product ${item.productId} not found` });
-
-      const price = isWholesale ? product.price * 0.7 : product.price;
-      orderItems.push({
-        product: product._id,
-        productSnapshot: { name: product.name, image: product.image, category: product.category },
-        price,
-        quantity: item.quantity,
-      });
-      subtotal += price * item.quantity;
-    }
-
-    const discount = isWholesale ? subtotal * 0 : 0; // Discount already applied per-item
     const order = await Order.create({
-      customer, items: orderItems,
+      customer, items: priced.items,
       channel: channel || 'website',
       isWholesale: !!isWholesale,
-      subtotal, discount,
-      total: subtotal - discount,
+      subtotal: priced.subtotal,
+      discount: priced.discount,
+      couponCode: priced.couponCode,
+      total: priced.total,
       notes,
     });
 
     // Update sales counts
-    for (const item of orderItems) {
+    for (const item of priced.items) {
       await Product.findByIdAndUpdate(item.product, { $inc: { salesCount: item.quantity } });
     }
 
@@ -151,11 +137,11 @@ const exportOrders = async (req, res, next) => {
 
     const orders = await Order.find(filter).sort({ createdAt: -1 });
     const csvRows = [
-      ['Order ID', 'Date', 'Customer', 'Email', 'Phone', 'Status', 'Channel', 'Total', 'Items'].join(','),
+      ['Order ID', 'Date', 'Customer', 'Email', 'Phone', 'Status', 'Payment', 'Channel', 'Total', 'Items'].join(','),
       ...orders.map(o => [
         o.orderId, new Date(o.createdAt).toISOString().slice(0, 10),
         `"${o.customer.name}"`, o.customer.email, o.customer.phone || '',
-        o.status, o.channel, o.total, o.items.length,
+        o.status, o.payment?.method === 'paypal' ? `paypal:${o.payment.status}` : '', o.channel, o.total, o.items.length,
       ].join(',')),
     ];
 

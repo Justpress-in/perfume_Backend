@@ -6,9 +6,24 @@ const orderItemSchema = new mongoose.Schema({
     name: { en: String, ar: String },
     image: String,
     category: String,
+    variant: String,
   },
   price: { type: Number, required: true },
   quantity: { type: Number, required: true, min: 1 },
+}, { _id: false });
+
+const paymentSchema = new mongoose.Schema({
+  method:   { type: String, enum: ['none', 'paypal'], default: 'none' },
+  status:   { type: String, enum: ['unpaid', 'pending', 'paid', 'failed', 'refunded'], default: 'unpaid' },
+  provider: {
+    orderId:    { type: String, index: true }, // PayPal order id
+    captureId:  String,
+    payerId:    String,
+    payerEmail: String,
+  },
+  amount:   String, // amount charged on PayPal, in `currency`
+  currency: String,
+  paidAt:   Date,
 }, { _id: false });
 
 const orderSchema = new mongoose.Schema({
@@ -31,9 +46,11 @@ const orderSchema = new mongoose.Schema({
   },
   subtotal:  { type: Number, required: true },
   discount:  { type: Number, default: 0 },
+  couponCode: { type: String, default: '' },
   total:     { type: Number, required: true },
   isWholesale: { type: Boolean, default: false },
   notes:     { type: String, default: '' },
+  payment:   { type: paymentSchema, default: () => ({}) },
   statusHistory: [{
     status: String,
     changedAt: { type: Date, default: Date.now },
